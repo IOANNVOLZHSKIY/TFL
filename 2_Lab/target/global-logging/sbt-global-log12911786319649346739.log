@@ -1,0 +1,14 @@
+[debug] > Exec(sbtStashOnFailure, None, None)
+[debug] > Exec(sbtMapExec 7 __84310c34-1749-4db2-843b-7e920f2aaf05, None, None)
+[debug] > Exec(bspBuildTargetScalacOptions file:/C:/Users/ivand/Desktop/%D0%A3%D0%9D%D0%98%D0%92%D0%95%D0%A0/%D0%A2%D0%A4%D0%AF/2_Lab/#root-2_lab/Compile file:/C:/Users/ivand/Desktop/%D0%A3%D0%9D%D0%98%D0%92%D0%95%D0%A0/%D0%A2%D0%A4%D0%AF/2_Lab/#root-2_lab/Test file:/C:/Users/ivand/Desktop/%D0%A3%D0%9D%D0%98%D0%92%D0%95%D0%A0/%D0%A2%D0%A4%D0%AF/2_Lab/#root-2_lab-build, Some(__84310c34-1749-4db2-843b-7e920f2aaf05), Some(CommandSource(network-1)))
+[debug] jsonRpcNotify: JsonRpcNotificationMessage(2.0, build/logMessage, {"type":4,"message":"Processing buildTarget/scalacOptions"})
+[debug] Evaluating tasks: bspBuildTargetScalacOptions
+[debug] Running task... Cancel: Signal, check cycles: false, forcegc: true
+[success] Total time: 0 s, completed 8 окт. 2023 г., 16:10:43
+[debug] > Exec(sbtCompleteExec 7, None, None)
+[debug] > Exec(resumeFromFailure, None, None)
+[debug] > Exec(sbtPopOnFailure, None, None)
+[debug] > Exec(sbtReportResult 7, Some(7), Some(CommandSource(network-1)))
+[debug] unmatched Processing event for requestId Some(7): None
+[debug] unmatched json response for requestId Some(7): {"status":"Done","channelName":"network-1","execId":"7","commandQueue":["shell"],"exitCode":0}
+[debug] > Exec(shell, None, None)
