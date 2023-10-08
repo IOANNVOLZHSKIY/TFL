@@ -19,4 +19,8 @@
       </library>
     </orderEntry>
   </component>
+  <component name="SbtModule">
+    <option name="buildForURI" value="file:/$MODULE_DIR$/../../../../../%D0%A3%D0%9D%D0%98%D0%92%D0%95%D0%A0/%D0%A2%D0%A4%D0%AF/2_Lab/#root-2_lab/Test" />
+    <option name="imports" value="import _root_.scala.xml.{TopScope=&gt;SUB:DOLLARscope}, import _root_.sbt._, import _root_.sbt.Keys._, import _root_.sbt.nio.Keys._, import _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.JUnitXmlReportPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin" />
+  </component>
 </module>
