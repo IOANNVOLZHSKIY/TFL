@@ -1,8 +1,5 @@
 import com.sun.tools.javac.jvm.PoolConstant.LoadableConstant.String
-import scala.io.StdIn.{readInt, readLine}
-import scala.util.Random
-
-import regexGenerator._
+import linearParser._
 
 object Main {
 
@@ -23,9 +20,11 @@ object Main {
 
      */
 
-    val regex = "xz|xy"
-    val res = RegexParser.apply(regex)
+    val regex = "a(a|b)*"
 
-    println(res.map(_.toString))
+    finderClosingBrac(regex, 0)
+
+    print(parse(regex, true))
+
   }
 }
