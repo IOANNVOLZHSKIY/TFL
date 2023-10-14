@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="file:/$MODULE_DIR$/../../../../../%D0%A3%D0%9D%D0%98%D0%92%D0%95%D0%A0/%D0%A2%D0%A4%D0%AF/2_Lab/#root-2_lab/Compile" external.linked.project.path="C:\Users\ivand\Desktop\УНИВЕР\ТФЯ\2_Lab" external.root.project.path="$MODULE_DIR$/../.." external.system.id="BSP" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <exclude-output />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="BSP: root-2_lab dependencies">
+        <CLASSES />
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library name="BSP: root-2_lab test dependencies">
+        <CLASSES />
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="BSP: scala-sdk-2.12.15" type="Scala">
+        <properties>
+          <compiler-classpath>
+            <root url="file://$USER_HOME$/.sbt/boot/scala-2.12.15/lib/scala-library.jar" />
+            <root url="file://$USER_HOME$/.sbt/boot/scala-2.12.15/lib/scala-compiler.jar" />
+            <root url="file://$USER_HOME$/.sbt/boot/scala-2.12.15/lib/scala-reflect.jar" />
+            <root url="file://$USER_HOME$/.sbt/boot/scala-2.12.15/lib/scala-xml_2.12-1.0.6.jar" />
+          </compiler-classpath>
+        </properties>
+        <CLASSES />
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>

@@ -57,5 +57,4 @@ object regexGenerator {
 
     return regexes
   }
-
 }

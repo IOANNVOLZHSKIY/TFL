@@ -23,7 +23,9 @@ object Main {
 
      */
 
-    println(regexGen(2, 5, 3, 15)(0))
-    println(regexGen(2, 5, 3, 15)(1))
+    val regex = "xz|xy"
+    val res = RegexParser.apply(regex)
+
+    println(res.map(_.toString))
   }
 }
