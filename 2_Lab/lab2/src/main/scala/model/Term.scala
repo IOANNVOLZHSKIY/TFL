@@ -1,13 +1,11 @@
 package model
 
-import jdk.incubator.vector.VectorOperators.Binary
-
 import scala.annotation.{tailrec, unused}
 
-
-sealed trait Term { // TODO: описать приведение к строке для сортировки для всех кейс-классов
+sealed trait Term {
   val isBinary: Boolean
   def toRegex: String
+  def toPrettyRegex: String
 }
 sealed trait Binary extends Term {
   var left: Term
@@ -19,35 +17,67 @@ case class Symbol(value: Char) extends Term { // a
   override val isBinary: Boolean = false
 
   override def toRegex: String = value.toString
+
+  override def toPrettyRegex: String = value.toString
 }
 case class Or(var left: Term, var right: Term, var isACIProcessed: Boolean = false) extends Term with Binary { // a|b
-  //    override def toString: String = (left, right) match {
-  //        case (Symbol(l), Symbol(r)) => s"$l|$r"
-  //    }
   override val isBinary: Boolean = true
 
   override def toRegex: String = s"(${left.toRegex}|${right.toRegex})"
+
+  override def toPrettyRegex: String = {
+    def prettyArg(term: Term): String = term match {
+      case s@Symbol(_) => s.toPrettyRegex
+      case or@Or(_, _, _) => s"(${or.toPrettyRegex})"
+      case concat@Concat(_, _) => concat.toPrettyRegex
+      case repeat@Repeat(_) => s"${repeat.toPrettyRegex}"
+    }
+
+    s"${prettyArg(left)}|${prettyArg(right)}"
+  }
 }
 case class Concat(var left: Term, var right: Term) extends Term with Binary { // ab
   override val isBinary: Boolean = true
 
   override def toRegex: String = s"(${left.toRegex}${right.toRegex})"
+
+  override def toPrettyRegex: String = {
+    def prettyArg(term: Term): String = term match {
+      case s@Symbol(_) => s.toPrettyRegex
+      case or@Or(_, _, _) => s"(${or.toPrettyRegex})"
+      case concat@Concat(_, _) => concat.toPrettyRegex
+      case repeat@Repeat(_) => s"${repeat.toPrettyRegex}"
+    }
+
+    s"${prettyArg(left)}${prettyArg(right)}"
+  }
 }
 case class Repeat(var term: Term) extends Term { // a*
   override val isBinary: Boolean = false
 
   override def toRegex: String = s"(${term.toRegex})*"
+
+  override def toPrettyRegex: String = term match {
+    case s@Symbol(_) => s"${s.toPrettyRegex}*"
+    case or@Or(_, _, _) => s"(${or.toPrettyRegex})*"
+    case concat@Concat(_, _) => s"(${concat.toPrettyRegex})*"
+    case repeat@Repeat(_) => s"(${repeat.toPrettyRegex})*"
+  }
 }
 // made it mutable to rebuild binary tree the most easiest way
 case class RegexTree(var root: Term) extends Term {
   override val isBinary: Boolean = false
 
   override def toRegex: String = root.toRegex
+
+  override def toPrettyRegex: String = root.toPrettyRegex
 }
 case object Eps extends Term {
   override val isBinary: Boolean = false
 
   override def toRegex: String = ""
+
+  override def toPrettyRegex: String = ""
 }
 
 object Term {
@@ -138,12 +168,10 @@ object Term {
   def transformToLeftAssociativity(toTransform: Term): Unit = {
     toTransform match {
       case or@Or(left, right, _) =>
-        //                swapBinary[Or](or)
         swapAlternative(or)
         transformToLeftAssociativity(left)
         transformToLeftAssociativity(right)
       case concat@Concat(left, right) =>
-        //                swapBinary[Concat](concat)
         swapConcat(concat)
         transformToLeftAssociativity(left)
         transformToLeftAssociativity(right)
@@ -154,7 +182,15 @@ object Term {
     }
   }
 
-  def normalizeAlternatives(term: Term, isLeftChild: Boolean, parent: Option[Term] = None): Unit = { // process only when tree is left associative
+  def replaceChild(parent: Term, isLeftChild: Boolean, newChild: Term): Unit = {
+    parent match {
+      case b: Binary => if (isLeftChild) b.left = newChild else b.right = newChild
+      case r@Repeat(_) => r.term = newChild
+      case t@RegexTree(_) => t.root = newChild
+    }
+  }
+
+  def normalizeAlternatives(term: Term, isLeftChild: Boolean, parent: Term): Unit = { // process only when tree is left associative
     @unused
     @tailrec
     def getAlternativeSubtree(current: Term, subtree: Vector[Or] = Vector.empty): Vector[Or] = {
@@ -182,52 +218,40 @@ object Term {
         val args = getAlternativeSubtreeArguments(or)
         val processedArgs = args.distinctBy(_.toString).sortBy(_.toString).reverse // TODO: узнать ещё раз, как сортировать лексикографически
         val formedAlternatives = createAlternativesWithArguments(processedArgs)
-        parent.foreach {
-          case b: Binary => if (isLeftChild) b.left = formedAlternatives else b.right = formedAlternatives
-          case r@Repeat(_) => r.term = formedAlternatives
-          case t@RegexTree(_) => t.root = formedAlternatives
-        }
-        normalizeAlternatives(formedAlternatives.left, isLeftChild = true, parent = Some(formedAlternatives))
-        normalizeAlternatives(formedAlternatives.right, isLeftChild = false, parent = Some(formedAlternatives))
+        replaceChild(parent, isLeftChild, newChild = formedAlternatives)
+        normalizeAlternatives(formedAlternatives.left, isLeftChild = true, parent = formedAlternatives)
+        normalizeAlternatives(formedAlternatives.right, isLeftChild = false, parent = formedAlternatives)
       case or@Or(left, right, _) =>
-        normalizeAlternatives(left, isLeftChild = true, parent = Some(or))
-        normalizeAlternatives(right, isLeftChild = false, parent = Some(or))
+        normalizeAlternatives(left, isLeftChild = true, parent = or)
+        normalizeAlternatives(right, isLeftChild = false, parent = or)
       case concat@Concat(left, right) =>
-        normalizeAlternatives(left, isLeftChild = true, parent = Some(concat))
-        normalizeAlternatives(right, isLeftChild = false, parent = Some(concat))
-      case repeat@Repeat(inner) => normalizeAlternatives(inner, isLeftChild = false, parent = Some(repeat))
+        normalizeAlternatives(left, isLeftChild = true, parent = concat)
+        normalizeAlternatives(right, isLeftChild = false, parent = concat)
+      case repeat@Repeat(inner) => normalizeAlternatives(inner, isLeftChild = false, parent = repeat)
       case _ => ()
     }
   }
 
-  def applyDstr(term: Term, isLeftChild: Boolean, parent: Option[Term] = None): Unit = {
+  def applyDstr(term: Term, isLeftChild: Boolean, parent: Term): Unit = {
     term match {
       case or@Or(left, right, _) =>
-        applyDstr(left, isLeftChild = true, parent = Some(or))
-        applyDstr(right, isLeftChild = false, parent = Some(or))
-        (left, right) match { // ab|ac = a(b|c); ba|ca = (b|c)a
+        applyDstr(or.left, isLeftChild = true, parent = or)
+        applyDstr(or.right, isLeftChild = false, parent = or) // может быть, после применённых dstr это уже не or
+        (or.left, or.right) match { // ab|ac = a(b|c); ba|ca = (b|c)a
           case (Concat(a, b), Concat(c, d)) =>
             if (a.toString == c.toString) {
               val createdConcat = Concat(a, Or(b, d, isACIProcessed = true))
-              parent.foreach { // TODO: вынести в отдельную функцию replaceParentChild(child: Term)
-                case b: Binary => if (isLeftChild) b.left = createdConcat else b.right = createdConcat
-                case r@Repeat(_) => r.term = createdConcat
-                case t@RegexTree(_) => t.root = createdConcat
-              }
+              replaceChild(parent, isLeftChild, newChild = createdConcat)
             } else if (b.toString == d.toString) {
               val createdConcat = Concat(Or(a, c, isACIProcessed = true), d)
-              parent.foreach { // TODO: вынести в отдельную функцию replaceParentChild(child: Term)
-                case b: Binary => if (isLeftChild) b.left = createdConcat else b.right = createdConcat
-                case r@Repeat(_) => r.term = createdConcat
-                case t@RegexTree(_) => t.root = createdConcat
-              }
+              replaceChild(parent, isLeftChild, newChild = createdConcat)
             } else ()
           case _ => ()
         }
       case concat@Concat(left, right) =>
-        applyDstr(left, isLeftChild = true, Some(concat))
-        applyDstr(right, isLeftChild = false, Some(concat))
-      case repeat@Repeat(term) => applyDstr(term, isLeftChild = false, Some(repeat))
+        applyDstr(left, isLeftChild = true, concat)
+        applyDstr(right, isLeftChild = false, concat)
+      case repeat@Repeat(term) => applyDstr(term, isLeftChild = false, repeat)
       case Symbol(_) => ()
     }
   }

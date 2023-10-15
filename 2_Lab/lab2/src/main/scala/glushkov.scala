@@ -1,6 +1,8 @@
 import jdk.dynalink.linker.support.Guards.isInstance
 import linearParser._
 
+import scala.util.Random
+
 object glushkov {
   def first(regex: String): (Vector[Any], Boolean) = { // предусмотреть второй случай, где нужно вывести без булеан
     if (regex.isInstanceOf[String]) {
@@ -245,11 +247,104 @@ object glushkov {
     return -1
   }
 
-  def createCycle(): Unit = {
-    //TODO
+  var done = false
+  val random = new Random()
+  var nq = ""
+
+  def createCycle(Q: String, last: String, automat: Vector[(String, String, String)], reachMx: Vector[(String, Vector[Any])], done: Boolean): String = {
+    var next_q = Vector[String]()
+    var word = ""
+    var done_new = done
+
+    if (!done) {
+      for (i <- 0 until automat.length) {
+        if ((automat(i)._1 == Q) && (reachMx(indexFinder(automat(i)._2, reachMx))._2.contains(last))) {
+          next_q = next_q :+ automat(i)._3
+        }
+      }
+
+      if (next_q.length == 1) {
+        if (next_q(0) == Q) {
+          word += next_q(0)(0)
+        } else {
+          word += next_q(0)(0)
+        }
+
+        var nq = next_q(0)
+      } else {
+        val r = random.nextInt(next_q.length)
+        nq = next_q(r)
+
+        if (nq == Q) {
+          var wn = nq(0)
+          word += wn
+        } else {
+          word += nq(0)
+        }
+      }
+
+      if (nq == last) {
+        done_new = true
+      }
+      return word + createCycle(nq, last, automat, reachMx, done_new)
+    } else {
+      return ""
+    }
   }
 
-  def createWord(): Unit = {
-    //TODO
+  def createWord(first_q: String, last_q: String, automat: Vector[(String, String, String)], reachMx: Vector[(String, Vector[Any])]): String = {
+    var word = ""
+    var start_pos = first_q
+    var next_q = Vector[String]()
+
+    if ((first_q == last_q) && (reachMx(indexFinder(first_q, reachMx))._2.contains(last_q))) {
+      return ""
+    }
+
+    if (reachMx(indexFinder(first_q, reachMx))._2.contains(last_q)) {
+      for (i <- 0 until automat.length) {
+        if (automat(i)._1 == first_q) {
+          if ((reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last_q)) || (last_q == automat(i)._3)) {
+            next_q = next_q :+ automat(i)._3
+          }
+        }
+      }
+
+      if (next_q.isEmpty) {
+        return last_q(0).toString
+      }
+
+      if (next_q.length == 1) {
+        if (next_q(0) == first_q) {
+          val rn = random.between(100, 300)
+
+          for (k <- 0 until rn) {
+            word += next_q(0)(0)
+          }
+        } else {
+          word += next_q(0)(0)
+        }
+        nq = next_q(0)
+      } else {
+
+        val rn = random.nextInt(next_q.length)
+        nq = next_q(rn)
+
+        if (nq == first_q) {
+          val rn = random.between(100, 300)
+          var wn = ""
+          for (k <- 0 until rn) {
+            wn += nq(0)
+          }
+        } else {
+          word += nq(0)
+        }
+      }
+
+      return word + createWord(nq, last_q, automat, reachMx)
+    }
+    else {
+      return ""
+    }
   }
 }

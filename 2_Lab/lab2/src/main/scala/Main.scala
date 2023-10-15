@@ -1,9 +1,9 @@
 import com.sun.tools.javac.jvm.PoolConstant.LoadableConstant.String
-import linearParser._
+import model._
 import glushkov._
 import regexGenerator._
 
-import scala.util.Random
+import scala.util.{Random, Try}
 import scala.io.StdIn.readInt
 import scala.util.matching.Regex
 
@@ -14,6 +14,30 @@ object RegexUtils {
 }
 
 object Main {
+
+  def time[R](block: => R): R = {
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    println("Elapsed time: " + (t1 - t0) + "ns")
+    result
+  }
+
+  def normalizeRegex(regex: String): String = {
+    if (regex.isBlank || regex.isEmpty) "empty"
+    else {
+      val parsed: Option[Term] = Try(RegexParser(regex)).toOption.flatten
+      parsed match {
+        case Some(result) =>
+          val tree = RegexTree(Term.applySSNF(result))
+          Term.transformToLeftAssociativity(tree.root)
+          Term.normalizeAlternatives(tree.root, isLeftChild = false, parent = tree)
+          Term.applyDstr(tree.root, isLeftChild = false, parent = tree)
+          tree.toPrettyRegex
+        case None => "not parsed"
+      }
+    }
+  }
 
   def main(args: Array[String]): Unit = {
     println("Enter parameters for regex generation")
@@ -62,7 +86,7 @@ object Main {
           val rn = random.nextInt(last_qq.length)
           var last_q = last_qq(rn)
           //print
-          res_word = createWord("S", last_q, automata)
+          res_word = createWord("S", last_q.toString, automata, reachMx)
         } else {
           //print
           var res = Vector[Any]("S")
@@ -90,10 +114,10 @@ object Main {
               var repeat = random.between(600, 800)
 
               for (k <- 0 until repeat) {
-                res_word += createCycle(res(i), res(i), automata, false)
+                res_word += createCycle(res(i).toString, res(i).toString, automata, reachMx, false)
               }
             } else {
-              res_word += createCycle(res(i), res(i), automata, false)
+              res_word += createCycle(res(i).toString, res(i).toString, automata, reachMx, false)
             }
           }
         }
@@ -101,14 +125,19 @@ object Main {
         res_word += "Ω"
         println(res_word)
 
-        //Здесь необходимо вызвать нормализацию выражения в переменную pattern
+        val pattern = normalizeRegex(reg)
 
-        // Сравниваем pattern и res_word через функцию matches
-        // Выводим разницу во времени работы
+        val t = time {
+          pattern matches(res_word)
+        }
 
-        //Проделываем тоже самое, но вместо pattern берем reg (сгенерированное выражение)
-        //Показываем, что нормализация помогает и радуемся жизни
+        println("Time with normalized regex: " + t)
 
+        val t1 = time {
+          reg matches(res_word)
+        }
+
+        println("Time with original regex: " + t1)
       }
     }
   }
