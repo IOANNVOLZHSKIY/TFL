@@ -68,8 +68,8 @@ object linearParser {
         }
 
         res += regex.last
-        parse(regex, true)
-    }
+        parse(res, true)
+      }
     } else {
       if (regex.length == 1) { // Возможно литера
         if ((regex == "|") || (regex == "&")) {
@@ -84,14 +84,15 @@ object linearParser {
         }
       } else if ((regex(0) == '(') && (finderClosingBrac(regex, 0) == regex.length - 2) && (regex.last == '*')) {
         if (regex.length == 4) {
-          return List(List(regex(1)), "*")
+          return Vector(Vector(regex(1)), "*")
         } else {
-          return List(parse(regex.slice(1, regex.length - 2), true), "*")
+          return Vector(parse(regex.slice(1, regex.length - 2), true), "*")
         }
       } else if ((regex(0) == '(') && (finderClosingBrac(regex, 0) == regex.length - 1)) {
         if (regex.length == 3) {
           return List(regex(1))
         } else {
+          //println(regex.slice(1, regex.length - 1))
           return parse(regex.slice(1, regex.length - 1), true)
         }
       } else if (notOutOr(regex)) {

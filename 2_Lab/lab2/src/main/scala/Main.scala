@@ -54,11 +54,11 @@ object Main {
     println("Number if letters:")
     val letterNumber = readInt()
 
-
-    var test_array = regexGen(regexNumber, alphSize, starHeight, letterNumber)
+    val test_array = regexGen(regexNumber, alphSize, starHeight, letterNumber)
 
     for (i <- 0 until test_array.length) {
       var reg = test_array(i)
+      println(reg)
       var automata = make_automata(reg)
       println("Automata:" + automata)
 
@@ -82,18 +82,15 @@ object Main {
         var res_word = ""
 
         if ((list_of_reach.length == 0) || (!isCycle)) {
-          //print
           val rn = random.nextInt(last_qq.length)
           var last_q = last_qq(rn)
-          //print
           res_word = createWord("S", last_q.toString, automata, reachMx)
         } else {
-          //print
           var res = Vector[Any]("S")
           var next_step = list_of_reach
           var isContinue = 1
 
-          while ((isContinue == 1) && (next_step.length != 0)) {
+          while ((isContinue == 1) && next_step.nonEmpty) {
             var rn = random.nextInt(next_step.length - 1)
             res = res :+ next_step(rn)
             res = res :+ next_step(rn)
@@ -104,8 +101,6 @@ object Main {
               isContinue = random.nextInt(1)
             }
           }
-
-          //print
 
           res_word = ""
 
@@ -127,17 +122,17 @@ object Main {
 
         val pattern = normalizeRegex(reg)
 
+        println("Time with normalized regex: ")
+
         val t = time {
           pattern matches(res_word)
         }
 
-        println("Time with normalized regex: " + t)
+        println("Time with original regex: ")
 
         val t1 = time {
           reg matches(res_word)
         }
-
-        println("Time with original regex: " + t1)
       }
     }
   }

@@ -4,37 +4,44 @@ import linearParser._
 import scala.util.Random
 
 object glushkov {
-  def first(regex: String): (Vector[Any], Boolean) = { // предусмотреть второй случай, где нужно вывести без булеан
-    if (regex.isInstanceOf[String]) {
-      return (Vector(regex), false)
-    } else if (regex.length == 1) {
-      return first(regex(0).toString)
-    } else if ((regex.length == 2) && (regex(1) == '*')) {
-      return (first(regex(0).toString)._1, true)
-    } else if ((regex.length >= 3) && (regex(1) == '&')) {
-      val res = first(regex(0).toString)
-      val start = res._1
-      val isKellie = res._2
+  def first(regex: Any): (Vector[Any], Boolean) = { // предусмотреть второй случай, где нужно вывести без булеан
+    regex match {
+      case regex1: String =>
+        return (Vector(regex1), false)
+      case regex1: Char =>
+        return (Vector(regex1.toString), false)
+      case regex1: Vector[Any] =>
+        if (regex1.length == 1) {
+          return first(regex1(0).toString)
+        } else if ((regex1.length == 2) && (regex1(1) == '*')) {
+          return (first(regex1(0))._1, true)
+        } else if ((regex1.length >= 3) && (regex1(1) == '&')) {
+          val res = first(regex1(0))
+          val start = res._1
+          val isKellie = res._2
 
-      if (isKellie) {
-        val res1 = first(regex.slice(2, regex.length))
+          if (isKellie) {
+            val res1 = first(regex1.slice(2, regex1.length))
+            println(start)
+            println(res1)
 
-        return (start +: res1._1, res1._2)
-      } else {
-        return (start, false)
-      }
-    } else {
-      var res = Vector[Any]()
-      var isKellie = false
+            return ((start +: res1._1), res1._2)
+          } else {
+            return (start, false)
+          }
+        } else {
+          var res = Vector[Any]()
+          var isKellie = false
 
-      for (i <- 0 until regex.length by 2) {
-        val temp = first(regex(i).toString)
+          for (i <- regex1.indices by 2) {
+            val temp = first(regex1(i))
 
-        res = res :+ temp._1
-        val isKellie = temp._2
-      }
+            res = res :+ temp._1.toString()
+            val isKellie = temp._2
+          }
 
-      return (res, isKellie)
+          return (res, isKellie)
+        }
     }
   }
 
@@ -76,12 +83,12 @@ object glushkov {
     return Vector()
   }
 
-  def follow(regex: List[Any], variable: Char): Vector[Any] = { // предусмотреть cлучай, если подают просто строку, а не лист => пустой список
+  def follow(regex: Vector[Any], variable: Char): Vector[Any] = { // предусмотреть cлучай, если подают просто строку, а не лист => пустой список
     if (regex.length == 1) {
       if (regex.head.getClass.getSimpleName == "String") {
         return Vector()
       } else regex.head match {
-        case regex1: List[Any] =>
+        case regex1: Vector[Any] =>
           return follow(regex1, variable)
         case _ => return Vector()
       }
@@ -89,7 +96,7 @@ object glushkov {
       var res = Vector[Any]()
 
       regex.head match {
-        case regex1: List[Any] =>
+        case regex1: Vector[Any] =>
           var res = follow(regex1, variable)
           if (last(regex1.head.toString)._1.contains(variable)) {
             res = res :+ first(regex1.head.toString)._1
@@ -103,7 +110,7 @@ object glushkov {
 
       for (i <- 0 until regex.length by 2) {
         regex(i) match {
-          case regex1: List[Any] =>
+          case regex1: Vector[Any] =>
             res = res :+ follow(regex1, variable)
           case regex1: String => var res = follow_s(regex1, variable)
         }
@@ -117,7 +124,7 @@ object glushkov {
       for (i <- 0 until regex.length by 2) {
 
         regex(i) match {
-          case regex1: List[Any] =>
+          case regex1: Vector[Any] =>
             res = res :+ follow(regex1, variable)
 
             if (last(regex1.toString())._1.contains(variable)) {
@@ -142,23 +149,26 @@ object glushkov {
 
   def make_automata(regex: String): Vector[(String, String, String)] = { //Запись автомата: [('S', 'a', 'a1'), ('a1', 'b', 'b2'), ('b2', 'a', 'a1')]
     var r = parse(regex, false)
-    var f = first(regex)._1
+    var f = first(r)._1
+
+    println(f)
 
     last_qq = last(regex)._1
     var res = Vector[(String, String, String)]()
 
     for (i <- 0 until f.length) {
-      val tupleToAdd: (String, String, String) = ("S", f(i).asInstanceOf[Vector[Any]](0).toString, f(i).toString)
+      val tupleToAdd: (String, String, String) = ("S", f(i).toString, f(i).toString)
       res = res :+ tupleToAdd
     }
 
     for (i <- 0 until variables.length) {
       r match {
-        case r1: List[Any] =>
+        case r1: Vector[Any] =>
           var follows = follow(r1, variables(i).charAt(0))
 
           for (j <- 0 until follows.length) {
-            val tupleToAdd: (String, String, String) = (variables(i), follows(j).asInstanceOf[Vector[Any]](0).toString, follows(j).toString)
+            var temp = follows(j).toString
+            val tupleToAdd: (String, String, String) = (variables(i), temp(0).toString, follows(j).toString)
             res = res :+ tupleToAdd
           }
         case r1: String => var res = follow_s(r1, variables(i).charAt(0))
