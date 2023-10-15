@@ -1,10 +1,13 @@
 import com.sun.tools.javac.jvm.PoolConstant.LoadableConstant.String
 import linearParser._
+import glushkov._
+
+import scala.io.StdIn.readInt
 
 object Main {
 
   def main(args: Array[String]): Unit = {
-    /*println("Enter parameters for regex generation")
+    println("Enter parameters for regex generation")
 
     println("Regex Number:")
     val regexNumber = readInt()
@@ -18,13 +21,7 @@ object Main {
     println("Number if letters:")
     val letterNumber = readInt()
 
-     */
-
-    val regex = "a(a|b)*"
-
-    finderClosingBrac(regex, 0)
-
-    print(parse(regex, true))
+    
 
   }
 }
