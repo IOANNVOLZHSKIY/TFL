@@ -138,12 +138,12 @@ object glushkov {
 
   var last_qq = Vector[Any]()
 
-  def make_automata(regex: String): Vector[Any] = { //Запись автомата: [('S', 'a', 'a1'), ('a1', 'b', 'b2'), ('b2', 'a', 'a1')]
+  def make_automata(regex: String): Vector[(String, String, String)] = { //Запись автомата: [('S', 'a', 'a1'), ('a1', 'b', 'b2'), ('b2', 'a', 'a1')]
     var r = parse(regex, false)
     var f = first(regex)._1
 
     last_qq = last(regex)._1
-    var res = Vector[Any]()
+    var res = Vector[(String, String, String)]()
 
     for (i <- 0 until f.length) {
       val tupleToAdd: (String, String, String) = ("S", f(i).asInstanceOf[Vector[Any]](0).toString, f(i).toString)
@@ -168,7 +168,7 @@ object glushkov {
 
   var used_q = Vector[Any]()
 
-  def varReachability(q: String, automata: Vector[(String, Vector[Any])]): Vector[Any] =  {
+  def varReachability(q: String, automata: Vector[(String, String, String)]): Vector[Any] =  {
     var res = Vector[Any]()
 
     for (i <- 0 until automata.length) {
@@ -184,7 +184,7 @@ object glushkov {
     return res
   }
 
-  def matrixReachability(automata: Vector[(String, Vector[Any])]): Vector[(String, Vector[Any])] = { //Представление: [('S', ['a1', 'b2']), ('a1', ['b2', 'a1']), ('b2', ['a1', 'b2'])]
+  def matrixReachability(automata: Vector[(String, String, String)]): Vector[(String, Vector[Any])] = { //Представление: [('S', ['a1', 'b2']), ('a1', ['b2', 'a1']), ('b2', ['a1', 'b2'])]
     var res = Vector[(String, Vector[Any])]()
     val tupleToAdd: (String, Vector[Any]) = ("S", variables.toVector)
     res = res :+ tupleToAdd
