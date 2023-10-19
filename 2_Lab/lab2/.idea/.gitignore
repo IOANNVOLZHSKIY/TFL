@@ -16,3 +16,4 @@ target
 /build-sbt/
 local.sbt
 jitwatch.out
+.idea/
