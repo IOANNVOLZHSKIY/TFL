@@ -9,21 +9,19 @@ object glushkov {
       case regex1: String =>
         return (Vector(regex1), false)
       case regex1: Char =>
-        return (Vector(regex1.toString), false)
+        return (Vector(regex1), false)
       case regex1: Vector[Any] =>
         if (regex1.length == 1) {
-          return first(regex1(0).toString)
-        } else if ((regex1.length == 2) && (regex1(1) == '*')) {
+          return first(regex1(0))
+        } else if ((regex1.length == 2) && (regex1(1) == "*")) {
           return (first(regex1(0))._1, true)
-        } else if ((regex1.length >= 3) && (regex1(1) == '&')) {
+        } else if ((regex1.length >= 3) && (regex1(1) == "*")) {
           val res = first(regex1(0))
           val start = res._1
           val isKellie = res._2
 
           if (isKellie) {
             val res1 = first(regex1.slice(2, regex1.length))
-            println(start)
-            println(res1)
 
             return ((start +: res1._1), res1._2)
           } else {
@@ -36,7 +34,7 @@ object glushkov {
           for (i <- regex1.indices by 2) {
             val temp = first(regex1(i))
 
-            res = res :+ temp._1.toString()
+            res = res :+ temp._1
             val isKellie = temp._2
           }
 
@@ -45,79 +43,80 @@ object glushkov {
     }
   }
 
-  def last(regex: String): (Vector[Any], Boolean) = { // предусмотреть второй случай, где нужно вывести без булеан
-    if (regex.isInstanceOf[String]) {
-      return (Vector(regex), false)
-    } else if (regex.length == 1) {
-      return first(regex(0).toString)
-    } else if ((regex.length == 2) && (regex(1) == '*')) {
-      return (first(regex(0).toString)._1, true)
-    } else if ((regex.length >= 3) && (regex(1) == '&')) {
-      val res = first(regex.last.toString)
-      val start = res._1
-      val isKellie = res._2
+  def last(regex: Any): (Vector[Any], Boolean) = { // предусмотреть второй случай, где нужно вывести без булеан
+    regex match {
+      case r: String =>
+        return (Vector(regex), false)
+      case r: Vector[Any] =>
+        if (r.length == 1) {
+          return first(r(0).toString)
+        } else if ((r.length == 2) && (r(1) == "*")) {
+          return (first(r(0).toString)._1, true)
+        } else if ((r.length >= 3) && (r(1) == "&")) {
+          val res = first(r.last.toString)
+          val start = res._1
+          val isKellie = res._2
 
-      if (isKellie) {
-        val res1 = first(regex.slice(0, regex.length - 2))
+          if (isKellie) {
+            val res1 = first(r.slice(0, r.length - 2))
 
-        return (res1._1 :+ start, res1._2)
-      } else {
-        return (start, false)
-      }
-    } else {
-      var res = Vector[Any]()
-      var isKellie = false
+            return (Vector.concat(res1._1, start), res1._2)
+          } else {
+            return (start, false)
+          }
+        } else {
+          var res = Vector[Any]()
+          var isKellie = false
 
-      for (i <- 0 until regex.length by 2) {
-        val temp = first(regex(i).toString)
+          for (i <- 0 until r.length by 2) {
+            val temp = first(r(i))
 
-        res = res :+ temp._1
-        val isKellie = temp._2
-      }
+            res = Vector.concat(res, temp._1)
+            val isKellie = temp._2
+          }
 
-      return (res, isKellie)
+          return (res, isKellie)
+        }
     }
   }
 
-  def follow_s(regex: String, variable: Char): Vector[Any] = {
+  def follow_s(regex: String, variable: String): Vector[Any] = {
     return Vector()
   }
 
-  def follow(regex: Vector[Any], variable: Char): Vector[Any] = { // предусмотреть cлучай, если подают просто строку, а не лист => пустой список
+  def follow(regex: Vector[Any], variable: String): Vector[Any] = {
     if (regex.length == 1) {
-      if (regex.head.getClass.getSimpleName == "String") {
-        return Vector()
-      } else regex.head match {
+      regex.head match {
         case regex1: Vector[Any] =>
           return follow(regex1, variable)
         case _ => return Vector()
       }
-    } else if ((regex.length == 2) && (regex(1) == '*')) {
+    } else if ((regex.length == 2) && (regex(1) == "*")) {
       var res = Vector[Any]()
-
       regex.head match {
         case regex1: Vector[Any] =>
           var res = follow(regex1, variable)
-          if (last(regex1.head.toString)._1.contains(variable)) {
-            res = res :+ first(regex1.head.toString)._1
+          if (last(regex1)._1.contains(variable)) {
+            res = Vector.concat(res, first(regex1.head.toString)._1)
           }
-        case regex1: String => var res = follow_s(regex1, variable)
+          return res
+        case regex1: String =>
+          var res = follow_s(regex1, variable)
+          return res
       }
-
-      return res
-    } else if ((regex.length >= 3) && (regex(1) == '|')) {
+    } else if ((regex.length >= 3) && (regex(1) == "|")) {
       var res = Vector[Any]()
 
       for (i <- 0 until regex.length by 2) {
         regex(i) match {
           case regex1: Vector[Any] =>
-            res = res :+ follow(regex1, variable)
+            res = Vector.concat(res, follow(regex1, variable))
           case regex1: String => var res = follow_s(regex1, variable)
         }
       }
 
       return res
-    } else if ((regex.length >= 3) && (regex(1) == '&')) {
+    } else if ((regex.length >= 3) && (regex(1) == "&")) {
       var res = Vector[Any]()
       var status = true
 
@@ -125,12 +124,12 @@ object glushkov {
 
         regex(i) match {
           case regex1: Vector[Any] =>
-            res = res :+ follow(regex1, variable)
+            res = Vector.concat(res, follow(regex1, variable))
 
-            if (last(regex1.toString())._1.contains(variable)) {
+            if (last(regex1)._1.contains(variable)) {
               for (j <- i + 2 until regex.length by 2) {
-                res = res :+ first(regex1.toString)._1
-                if (!((regex1.length == 2) && (regex1(1) == '*'))) {
+                res = Vector.concat(res, first(regex1.toString)._1)
+                if (!((regex1.length == 2) && (regex1(1) == "*"))) {
                   status = false
                   return res
                 }
@@ -151,27 +150,37 @@ object glushkov {
     var r = parse(regex, false)
     var f = first(r)._1
 
+    println(r)
     println(f)
 
-    last_qq = last(regex)._1
+    last_qq = last(r)._1
+
     var res = Vector[(String, String, String)]()
 
     for (i <- 0 until f.length) {
-      val tupleToAdd: (String, String, String) = ("S", f(i).toString, f(i).toString)
-      res = res :+ tupleToAdd
+
+      f(i) match {
+        case f1: Vector[Any] =>
+          val tupleToAdd: (String, String, String) = ("S", f1(0).toString.slice(0, 1), f(i).toString)
+          res = res :+ tupleToAdd
+        case f1: String =>
+          val tupleToAdd: (String, String, String) = ("S", f1.slice(0, 1), f(i).toString)
+          res = res :+ tupleToAdd
+      }
     }
 
     for (i <- 0 until variables.length) {
       r match {
         case r1: Vector[Any] =>
-          var follows = follow(r1, variables(i).charAt(0))
+          var follows = follow(r1, variables(i))
 
           for (j <- 0 until follows.length) {
             var temp = follows(j).toString
             val tupleToAdd: (String, String, String) = (variables(i), temp(0).toString, follows(j).toString)
             res = res :+ tupleToAdd
           }
-        case r1: String => var res = follow_s(r1, variables(i).charAt(0))
+        case r1: String =>
+          var res = follow_s(r1, variables(i))
       }
     }
 
@@ -185,10 +194,10 @@ object glushkov {
 
     for (i <- 0 until automata.length) {
       if (automata(i)._1 == q) {
-        if (!(used_q.contains(automata(i)._2))) {
-          res = res :+ automata(i)._2
-          used_q = used_q :+ automata(i)._2
-          res = res :+ varReachability(automata(i)._2(0).toString, automata)
+        if (!(used_q.contains(automata(i)._3))) {
+          res = res :+ automata(i)._3
+          used_q = used_q :+ automata(i)._3
+          res = Vector.concat(res, varReachability(automata(i)._3(0).toString, automata))
         }
       }
     }
@@ -246,15 +255,14 @@ object glushkov {
       if (m(i)._1 == element) {
         res = res :+ i
       }
-      if (res.length == 1) {
-        return res(0)
-      } else {
-        println("ERROR in indexFinder")
-        return -1
-      }
     }
-    println("ERROR in indexFinder")
-    return -1
+
+    if (res.length == 1) {
+      return res(0)
+    } else {
+      println("ERROR in indexFinder")
+      return -1
+    }
   }
 
   var done = false

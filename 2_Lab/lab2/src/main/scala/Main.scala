@@ -1,5 +1,6 @@
 import com.sun.tools.javac.jvm.PoolConstant.LoadableConstant.String
 import model._
+import linearParser._
 import glushkov._
 import regexGenerator._
 
@@ -40,6 +41,7 @@ object Main {
   }
 
   def main(args: Array[String]): Unit = {
+
     println("Enter parameters for regex generation")
 
     println("Regex Number:")
@@ -57,6 +59,7 @@ object Main {
     val test_array = regexGen(regexNumber, alphSize, starHeight, letterNumber)
 
     for (i <- 0 until test_array.length) {
+      last_qq = Vector()
       var reg = test_array(i)
       println(reg)
       var automata = make_automata(reg)
@@ -91,14 +94,14 @@ object Main {
           var isContinue = 1
 
           while ((isContinue == 1) && next_step.nonEmpty) {
-            var rn = random.nextInt(next_step.length - 1)
+            var rn = random.nextInt(next_step.length)
             res = res :+ next_step(rn)
             res = res :+ next_step(rn)
 
             if (!(last_qq.contains(next_step(rn)))) {
               isContinue = 1
             } else {
-              isContinue = random.nextInt(1)
+              isContinue = random.nextInt(2)
             }
           }
 
@@ -118,7 +121,6 @@ object Main {
         }
 
         res_word += "Ω"
-        println(res_word)
 
         val pattern = normalizeRegex(reg)
 
