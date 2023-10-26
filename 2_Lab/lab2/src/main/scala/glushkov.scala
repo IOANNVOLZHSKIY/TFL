@@ -161,10 +161,10 @@ object glushkov {
 
       f(i) match {
         case f1: Vector[Any] =>
-          val tupleToAdd: (String, String, String) = ("S", f1(0).toString.slice(0, 1), f(i).toString)
+          val tupleToAdd: (String, String, String) = ("S", f1(0).toString.slice(0, 1), f1(0).toString)
           res = res :+ tupleToAdd
         case f1: String =>
-          val tupleToAdd: (String, String, String) = ("S", f1.slice(0, 1), f(i).toString)
+          val tupleToAdd: (String, String, String) = ("S", f1.slice(0, 1), f1)
           res = res :+ tupleToAdd
       }
     }
