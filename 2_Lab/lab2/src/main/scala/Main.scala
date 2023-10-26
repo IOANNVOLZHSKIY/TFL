@@ -58,6 +58,7 @@ object Main {
 
     val test_array = regexGen(regexNumber, alphSize, starHeight, letterNumber)
 
+
     for (i <- 0 until test_array.length) {
       last_qq = Vector[Any]()
       var reg = test_array(i)
@@ -69,7 +70,7 @@ object Main {
       println("Matrix:" + reachMx)
 
       var list_of_reach = listReachableFromItself(reachMx)
-      println("List of hundred states that are achievable by themselves " + list_of_reach)
+      println("List of hundred states that are achievable by themselves: " + list_of_reach)
 
       var isCycle = false
 
@@ -84,7 +85,7 @@ object Main {
       for (k <- 0 until 10) {
         var res_word = ""
 
-        if ((list_of_reach.length == 0) || (!isCycle)) {
+        if (list_of_reach.isEmpty || (!isCycle)) {
           val rn = random.nextInt(last_qq.length)
           val last_q = last_qq(rn)
           last_q match {
@@ -112,13 +113,13 @@ object Main {
 
           for (i <- 0 until res.length - 1) {
             if (res(i) == res(i + 1)) {
-              var repeat = random.between(600, 800)
+              val repeat = random.between(600, 800)
 
               for (k <- 0 until repeat) {
                 res_word += createCycle(res(i).toString, res(i).toString, automata, reachMx, false)
               }
             } else {
-              res_word += createCycle(res(i).toString, res(i).toString, automata, reachMx, false)
+              res_word += createWord(res(i).toString, res(i + 1).toString, automata, reachMx)
             }
           }
         }
@@ -145,6 +146,7 @@ object Main {
             println("Doesn't match")
           }
         }
+        println()
       }
     }
   }

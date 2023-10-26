@@ -23,7 +23,7 @@ object glushkov {
           if (isKellie) {
             val res1 = first(regex1.slice(2, regex1.length))
 
-            return ((start +: res1._1), res1._2)
+            return ((Vector.concat(res1._1, start), res1._2))
           } else {
             return (start, false)
           }
@@ -34,7 +34,7 @@ object glushkov {
           for (i <- regex1.indices by 2) {
             val temp = first(regex1(i))
 
-            res = res :+ temp._1
+            res = Vector.concat(res, temp._1)
             val isKellie = temp._2
           }
 
@@ -49,9 +49,9 @@ object glushkov {
         return (Vector(regex), false)
       case r: Vector[Any] =>
         if (r.length == 1) {
-          return first(r(0).toString)
+          return first(r(0))
         } else if ((r.length == 2) && (r(1) == "*")) {
-          return (first(r(0).toString)._1, true)
+          return (first(r(0))._1, true)
         } else if ((r.length >= 3) && (r(1) == "&")) {
           val res = first(r.last.toString)
           val start = res._1
@@ -97,7 +97,7 @@ object glushkov {
         case regex1: Vector[Any] =>
           var res = follow(regex1, variable)
           if (last(regex1)._1.contains(variable)) {
-            res = Vector.concat(res, first(regex1.head.toString)._1)
+            res = Vector.concat(res, first(regex1)._1)
           }
           return res
         case regex1: String =>
@@ -150,9 +150,6 @@ object glushkov {
     var r = parse(regex, false)
     var f = first(r)._1
 
-    println(r)
-    println(f)
-
     last_qq = last(r)._1
 
     var res = Vector[(String, String, String)]()
@@ -168,6 +165,7 @@ object glushkov {
           res = res :+ tupleToAdd
       }
     }
+
 
     for (i <- 0 until variables.length) {
       r match {
@@ -276,7 +274,7 @@ object glushkov {
 
     if (!done) {
       for (i <- 0 until automat.length) {
-        if ((automat(i)._1 == Q) && (reachMx(indexFinder(automat(i)._2, reachMx))._2.contains(last))) {
+        if ((automat(i)._1 == Q) && (reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last))) {
           next_q = next_q :+ automat(i)._3
         }
       }
