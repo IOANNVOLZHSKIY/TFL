@@ -15,7 +15,7 @@ object glushkov {
           return first(regex1(0))
         } else if ((regex1.length == 2) && (regex1(1) == "*")) {
           return (first(regex1(0))._1, true)
-        } else if ((regex1.length >= 3) && (regex1(1) == "*")) {
+        } else if ((regex1.length >= 3) && (regex1(1) == "&")) {
           val res = first(regex1(0))
           val start = res._1
           val isKellie = res._2
@@ -65,11 +65,12 @@ object glushkov {
             return (start, false)
           }
         } else {
+          //println("reg", r)
           var res = Vector[Any]()
           var isKellie = false
 
-          for (i <- 0 until r.length by 2) {
-            val temp = first(r(i))
+          for (i <- r.indices by 2) {
+            val temp = last(r(i))
 
             res = Vector.concat(res, temp._1)
             val isKellie = temp._2
@@ -139,7 +140,19 @@ object glushkov {
               }
             }
           case regex1: String =>
-            var res = follow_s(regex1, variable)
+            res = Vector.concat(res, follow_s(regex1, variable))
+
+            if (last(regex1)._1.contains(variable)) {
+              for (j <- i + 2 until regex.length by 2) {
+                if (status) {
+                  res = Vector.concat(res, first(regex(j))._1)
+
+                  if (!(regex1.length == 2 && regex1(1) == '*')) {
+                    status = false
+                  }
+                }
+              }
+            }
         }
       }
       return res
@@ -151,8 +164,8 @@ object glushkov {
   var last_qq = Vector[Any]()
 
   def make_automata(regex: String): Vector[(String, String, String)] = { //Запись автомата: [('S', 'a', 'a1'), ('a1', 'b', 'b2'), ('b2', 'a', 'a1')]
-    var r = parse(regex, false)
-    var f = first(r)._1
+    val r = parse(regex, false)
+    val f = first(r)._1
 
     last_qq = last(r)._1
 
