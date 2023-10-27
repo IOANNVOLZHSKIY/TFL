@@ -58,8 +58,7 @@ object Main {
 
     val test_array = regexGen(regexNumber, alphSize, starHeight, letterNumber)
 
-
-    for (i <- 0 until test_array.length) {
+    for (i <- test_array.indices) {
       last_qq = Vector[Any]()
       var reg = test_array(i)
       println(reg)
@@ -74,7 +73,7 @@ object Main {
 
       var isCycle = false
 
-      for (i <- 0 until list_of_reach.length) {
+      for (i <- list_of_reach.indices) {
         if (last_qq.contains(list_of_reach(i))) {
           isCycle = true
         }
@@ -88,6 +87,7 @@ object Main {
         if (list_of_reach.isEmpty || (!isCycle)) {
           val rn = random.nextInt(last_qq.length)
           val last_q = last_qq(rn)
+
           last_q match {
             case l: String =>
               res_word = createWord("S", l, automata, reachMx)

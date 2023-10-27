@@ -53,7 +53,7 @@ object glushkov {
         } else if ((r.length == 2) && (r(1) == "*")) {
           return (first(r(0))._1, true)
         } else if ((r.length >= 3) && (r(1) == "&")) {
-          val res = first(r.last.toString)
+          val res = first(r.last)
           val start = res._1
           val isKellie = res._2
 
@@ -107,11 +107,12 @@ object glushkov {
     } else if ((regex.length >= 3) && (regex(1) == "|")) {
       var res = Vector[Any]()
 
-      for (i <- 0 until regex.length by 2) {
+      for (i <- regex.indices by 2) {
         regex(i) match {
           case regex1: Vector[Any] =>
             res = Vector.concat(res, follow(regex1, variable))
-          case regex1: String => var res = follow_s(regex1, variable)
+          case regex1: String =>
+            var res = follow_s(regex1, variable)
         }
       }
 
@@ -120,7 +121,7 @@ object glushkov {
       var res = Vector[Any]()
       var status = true
 
-      for (i <- 0 until regex.length by 2) {
+      for (i <- regex.indices by 2) {
 
         regex(i) match {
           case regex1: Vector[Any] =>
@@ -128,14 +129,17 @@ object glushkov {
 
             if (last(regex1)._1.contains(variable)) {
               for (j <- i + 2 until regex.length by 2) {
-                res = Vector.concat(res, first(regex1.toString)._1)
-                if (!((regex1.length == 2) && (regex1(1) == "*"))) {
-                  status = false
-                  return res
+                if (status) {
+                  res = Vector.concat(res, first(regex(j))._1)
+
+                  if (!(regex1.length == 2 && regex1(1) == "*")) {
+                    status = false
+                  }
                 }
               }
             }
-          case regex1: String => var res = follow_s(regex1, variable)
+          case regex1: String =>
+            var res = follow_s(regex1, variable)
         }
       }
       return res
@@ -154,7 +158,7 @@ object glushkov {
 
     var res = Vector[(String, String, String)]()
 
-    for (i <- 0 until f.length) {
+    for (i <- f.indices) {
 
       f(i) match {
         case f1: Vector[Any] =>
@@ -166,14 +170,13 @@ object glushkov {
       }
     }
 
-
-    for (i <- 0 until variables.length) {
+    for (i <- variables.indices) {
       r match {
         case r1: Vector[Any] =>
-          var follows = follow(r1, variables(i))
+          val follows = follow(r1, variables(i))
 
-          for (j <- 0 until follows.length) {
-            var temp = follows(j).toString
+          for (j <- follows.indices) {
+            val temp = follows(j).toString
             val tupleToAdd: (String, String, String) = (variables(i), temp(0).toString, follows(j).toString)
             res = res :+ tupleToAdd
           }
@@ -190,7 +193,7 @@ object glushkov {
   def varReachability(q: String, automata: Vector[(String, String, String)]): Vector[Any] =  {
     var res = Vector[Any]()
 
-    for (i <- 0 until automata.length) {
+    for (i <- automata.indices) {
       if (automata(i)._1 == q) {
         if (!(used_q.contains(automata(i)._3))) {
           res = res :+ automata(i)._3
@@ -208,7 +211,7 @@ object glushkov {
     val tupleToAdd: (String, Vector[Any]) = ("S", variables.toVector)
     res = res :+ tupleToAdd
 
-    for (i <- 0 until variables.length) {
+    for (i <- variables.indices) {
       used_q = Vector[Any]()
       val tupleToAdd: (String, Vector[Any]) = (variables(i), (varReachability(variables(i), automata)))
       res = res :+ tupleToAdd
@@ -220,7 +223,7 @@ object glushkov {
   def listReachableFromItself(m: Vector[(String, Vector[Any])]): Vector[Any] = {
     var res = Vector[Any]()
 
-    for (i <- 0 until m.length) {
+    for (i <- m.indices) {
       if (m(i)._2.contains(m(i)._1)) {
         res = res :+ m(i)._1
       }
@@ -230,11 +233,11 @@ object glushkov {
   }
 
   def finderNextStep(q: String, ReachableFromInself: Vector[Any], ReachMatrix: Vector[(String, Vector[Any])]): Vector[Any] = {
-    for (i <- 0 until ReachMatrix.length) {
+    for (i <- ReachMatrix.indices) {
       if (ReachMatrix(i)._1 == q) {
         var next_step = Vector[Any]()
 
-        for (j <- 0 until ReachMatrix(i)._2.length) {
+        for (j <- ReachMatrix(i)._2.indices) {
           if (ReachableFromInself.contains(ReachMatrix(i)._2(j))) {
             next_step = next_step :+ ReachMatrix(i)._2(j)
           }
@@ -249,7 +252,7 @@ object glushkov {
   def indexFinder(element: String, m: Vector[(String, Vector[Any])]): Int = {
     var res = Vector[Int]()
 
-    for (i <- 0 until m.length) {
+    for (i <- m.indices) {
       if (m(i)._1 == element) {
         res = res :+ i
       }
@@ -273,7 +276,7 @@ object glushkov {
     var done_new = done
 
     if (!done) {
-      for (i <- 0 until automat.length) {
+      for (i <- automat.indices) {
         if ((automat(i)._1 == Q) && (reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last))) {
           next_q = next_q :+ automat(i)._3
         }
@@ -318,7 +321,7 @@ object glushkov {
     }
 
     if (reachMx(indexFinder(first_q, reachMx))._2.contains(last_q)) {
-      for (i <- 0 until automat.length) {
+      for (i <- automat.indices) {
         if (automat(i)._1 == first_q) {
           if ((reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last_q)) || (last_q == automat(i)._3)) {
             next_q = next_q :+ automat(i)._3
