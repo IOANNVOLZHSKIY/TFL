@@ -58,16 +58,15 @@ object Main {
 
     for (i <- test_array.indices) {
       last_qq = Vector[Any]()
-      var reg = test_array(i)
+      val reg = test_array(i)
       println(reg)
-      var automata = make_automata(reg)
-      println("Automata:" + automata)
+      val automata = make_automata(reg)
+      println("Automata:" + automata + "\n")
 
-      var reachMx = matrixReachability(automata)
-      println("Matrix:" + reachMx)
+      val reachMx = matrixReachability(automata)
+      println("Matrix:" + reachMx + "\n")
 
       var list_of_reach = listReachableFromItself(reachMx)
-      println("List of hundred states that are achievable by themselves: " + list_of_reach)
 
       var isCycle = false
 
@@ -76,6 +75,20 @@ object Main {
           isCycle = true
         }
       }
+
+      var upd_list_of_reach = Vector[Any]()
+
+      for (i <- last_qq.indices) {
+        for (t <- list_of_reach.indices) {
+          if (reachMx(indexFinder(list_of_reach(t).toString, reachMx))._2.contains(last_qq(i))) {
+            if (reachMx(indexFinder(last_qq(i).toString, reachMx))._2.contains(list_of_reach(t))) {
+              upd_list_of_reach = upd_list_of_reach :+ list_of_reach(t)
+            }
+          }
+        }
+      }
+
+      list_of_reach = upd_list_of_reach
 
       val random = new Random()
 
@@ -111,7 +124,7 @@ object Main {
 
           for (i <- 0 until res.length - 1) {
             if (res(i) == res(i + 1)) {
-              val repeat = random.between(600, 800)
+              val repeat = random.between(50, 200)
 
               for (k <- 0 until repeat) {
                 res_word += createCycle(res(i).toString, res(i).toString, automata, reachMx, false)
@@ -123,6 +136,8 @@ object Main {
         }
 
         val pattern = normalizeRegex(reg)
+
+        println("Result word:" + res_word)
 
         println("Time with normalized regex: ")
 

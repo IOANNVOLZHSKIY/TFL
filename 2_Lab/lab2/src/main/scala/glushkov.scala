@@ -43,29 +43,27 @@ object glushkov {
     }
   }
 
-  def last(regex: Any): (Vector[Any], Boolean) = { // предусмотреть второй случай, где нужно вывести без булеан
+  def last(regex: Any): (Vector[Any], Boolean) = {
     regex match {
       case r: String =>
         return (Vector(regex), false)
       case r: Vector[Any] =>
         if (r.length == 1) {
-          return first(r(0))
+          return last(r(0))
         } else if ((r.length == 2) && (r(1) == "*")) {
-          return (first(r(0))._1, true)
+          return (last(r(0))._1, true)
         } else if ((r.length >= 3) && (r(1) == "&")) {
-          val res = first(r.last)
+          val res = last(r.last)
           val start = res._1
           val isKellie = res._2
 
           if (isKellie) {
-            val res1 = first(r.slice(0, r.length - 2))
-
+            val res1 = last(r.slice(0, r.length - 2))
             return (Vector.concat(res1._1, start), res1._2)
           } else {
             return (start, false)
           }
         } else {
-          //println("reg", r)
           var res = Vector[Any]()
           var isKellie = false
 
@@ -73,7 +71,7 @@ object glushkov {
             val temp = last(r(i))
 
             res = Vector.concat(res, temp._1)
-            val isKellie = temp._2
+            isKellie = isKellie || temp._2
           }
 
           return (res, isKellie)
@@ -208,10 +206,10 @@ object glushkov {
 
     for (i <- automata.indices) {
       if (automata(i)._1 == q) {
-        if (!(used_q.contains(automata(i)._3))) {
+        if (!used_q.contains(automata(i)._3)) {
           res = res :+ automata(i)._3
           used_q = used_q :+ automata(i)._3
-          res = Vector.concat(res, varReachability(automata(i)._3(0).toString, automata))
+          res = Vector.concat(res, varReachability(automata(i)._3, automata))
         }
       }
     }
@@ -226,7 +224,7 @@ object glushkov {
 
     for (i <- variables.indices) {
       used_q = Vector[Any]()
-      val tupleToAdd: (String, Vector[Any]) = (variables(i), (varReachability(variables(i), automata)))
+      val tupleToAdd: (String, Vector[Any]) = (variables(i), varReachability(variables(i), automata))
       res = res :+ tupleToAdd
     }
 
@@ -279,7 +277,6 @@ object glushkov {
     }
   }
 
-  var done = false
   val random = new Random()
   var nq = ""
 
@@ -288,9 +285,9 @@ object glushkov {
     var word = ""
     var done_new = done
 
-    if (!done) {
+    if (!done_new) {
       for (i <- automat.indices) {
-        if ((automat(i)._1 == Q) && (reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last))) {
+        if ((automat(i)._1 == Q) && reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last)) {
           next_q = next_q :+ automat(i)._3
         }
       }
@@ -302,8 +299,12 @@ object glushkov {
           word += next_q(0)(0)
         }
 
-        var nq = next_q(0)
+        nq = next_q(0)
       } else {
+
+        if (next_q.isEmpty) {
+          println("nq " + nq + " last " + last)
+        }
         val r = random.nextInt(next_q.length)
         nq = next_q(r)
 
@@ -318,6 +319,7 @@ object glushkov {
       if (nq == last) {
         done_new = true
       }
+
       return word + createCycle(nq, last, automat, reachMx, done_new)
     } else {
       return ""
@@ -329,14 +331,14 @@ object glushkov {
     var start_pos = first_q
     var next_q = Vector[String]()
 
-    if ((first_q == last_q) && (reachMx(indexFinder(first_q, reachMx))._2.contains(last_q))) {
+    if ((first_q == last_q) && reachMx(indexFinder(first_q, reachMx))._2.contains(last_q)) {
       return ""
     }
 
     if (reachMx(indexFinder(first_q, reachMx))._2.contains(last_q)) {
       for (i <- automat.indices) {
         if (automat(i)._1 == first_q) {
-          if ((reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last_q)) || (last_q == automat(i)._3)) {
+          if (reachMx(indexFinder(automat(i)._3, reachMx))._2.contains(last_q) || (last_q == automat(i)._3)) {
             next_q = next_q :+ automat(i)._3
           }
         }
@@ -348,7 +350,7 @@ object glushkov {
 
       if (next_q.length == 1) {
         if (next_q(0) == first_q) {
-          val rn = random.between(100, 300)
+          val rn = random.between(50, 150)
 
           for (k <- 0 until rn) {
             word += next_q(0)(0)
@@ -363,11 +365,13 @@ object glushkov {
         nq = next_q(rn)
 
         if (nq == first_q) {
-          val rn = random.between(100, 300)
+          val rn = random.between(50, 150)
           var wn = ""
           for (k <- 0 until rn) {
             wn += nq(0)
           }
+
+          //word += wn
         } else {
           word += nq(0)
         }
