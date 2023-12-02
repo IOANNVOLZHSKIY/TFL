@@ -48,10 +48,10 @@ object Main {
     println("Alphabet Size:")
     val alphSize = readInt()
 
-    println("Star height:")
+    println("Max star height:")
     val starHeight = readInt()
 
-    println("Number if letters:")
+    println("Max number of letters in regex:")
     val letterNumber = readInt()
 
     val test_array = regexGen(regexNumber, alphSize, starHeight, letterNumber)
@@ -133,6 +133,17 @@ object Main {
               res_word += createWord(res(i).toString, res(i + 1).toString, automata, reachMx)
             }
           }
+        }
+
+        val op = Random.nextInt(2)
+
+        if (op == 1) {
+          // Злонамеренная накачка
+          val alphabet = "abcdefghijklmnopqrstuvwxyz"
+          val missingChar = alphabet.find(char => !res_word.contains(char))
+          val resultString = missingChar.map(char => res_word + char).getOrElse(res_word)
+          res_word = resultString
+          println("Malicious pumping")
         }
 
         val pattern = normalizeRegex(reg)

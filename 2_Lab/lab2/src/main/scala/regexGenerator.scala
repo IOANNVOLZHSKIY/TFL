@@ -57,9 +57,14 @@ object regexGenerator {
     var regexes = Array.ofDim[String](regexNumber)
 
     for (i <- 0 until regexNumber) {
-      regexes(i) = recursionComp(letterNumber, starHeight, alphSize)
-    }
+      var reg = recursionComp(letterNumber, starHeight, alphSize)
 
+      while (reg.isEmpty) {
+        reg = recursionComp(letterNumber, starHeight, alphSize)
+      }
+
+      regexes(i) = reg
+    }
     return regexes
   }
 }
