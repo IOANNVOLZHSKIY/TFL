@@ -46,7 +46,11 @@ object Main {
     val regexNumber = readInt()
 
     println("Alphabet Size:")
-    val alphSize = readInt()
+    var alphSize = readInt()
+    while (!(1 to 25 contains(alphSize))) {
+      println("The alphabet length must be greater than 0 but less than 52 characters long")
+      alphSize = readInt()
+    }
 
     println("Max star height:")
     val starHeight = readInt()
