@@ -48,7 +48,7 @@ object Main {
     println("Alphabet Size:")
     var alphSize = readInt()
     while (!(1 to 25 contains(alphSize))) {
-      println("The alphabet length must be greater than 0 but less than 52 characters long")
+      println("The alphabet length must be greater than 0 but less than 25 characters long")
       alphSize = readInt()
     }
 
